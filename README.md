@@ -31,7 +31,7 @@ npm run build
 ### 2. Start the proxy
 
 ```bash
-npm run dev -w packages/librechat-backend
+npm start
 ```
 
 ### 3. Add to LibreChat config

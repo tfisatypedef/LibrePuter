@@ -10,7 +10,8 @@
     "build": "npm run build --workspaces",
     "build:backend": "npm run build -w packages/librechat-backend",
     "build:ui": "npm run build -w packages/librechat-ui",
-    "dev": "npm run dev --workspaces",
+    "start": "node packages/librechat-backend/dist/index.js",
+    "dev": "node packages/librechat-backend/dist/index.js",
     "test": "npm run test --workspaces",
     "prepublish": "npm run build"
   },
