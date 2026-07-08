@@ -1,18 +1,14 @@
-# LibrePuter provides keyless access to 500+ AI models via Puter's User-Pays model.
-# Users sign in with their own Puter account and cover their own AI usage costs.
-# You do not need any API keys.
-#
-# For the hosted (keyless) mode, point baseURL at the LibrePuter proxy directly:
+# LibrePuter: keyless AI via Puter's User-Pays model.
+# Users paste their Puter auth token (from puter.com/dashboard) as the API key.
+# No API keys needed from you — users cover their own AI costs.
+
 endpoints:
   custom:
-    - name: "Puter"
+    - name: "Puter AI"
       baseURL: "http://localhost:3090/api/puter/proxy/v1"
-      apiKey: ""
+      apiKey: "user_provided"
       models:
         default: []
         fetch: true
       modelDisplayLabel: "Puter AI"
       titleConvo: true
-
-# If LibrePuter is mounted inside LibreChat (patched), use a relative path instead:
-#   baseURL: "/api/puter/proxy/v1"

@@ -5,12 +5,15 @@ const PUTER_API_BASE = 'https://api.puter.com/puterai/openai/v1';
 export function createPuterHostedProxyRouter(): Router {
   const router = Router();
 
+  // Proxy AI requests to Puter's hosted API
+  // LibreChat sends Authorization: Bearer <user-puter-auth-token>
+  // We forward it as-is to api.puter.com
   router.all('/proxy/v1/*', async (req, res) => {
     const authHeader = req.headers['authorization'] as string;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       res.status(401).json({
-        error: 'Missing or invalid Authorization header. Users must sign in with Puter first.',
+        error: 'Missing or invalid Authorization header.',
         code: 'PUTER_AUTH_REQUIRED',
       });
       return;
@@ -101,6 +104,7 @@ export function createPuterHostedProxyRouter(): Router {
     }
   });
 
+  // List available models (public, no auth needed)
   router.get('/models', async (_req, res) => {
     try {
       const response = await fetch(

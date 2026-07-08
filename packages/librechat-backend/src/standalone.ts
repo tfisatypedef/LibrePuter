@@ -26,16 +26,6 @@ export function createStandaloneServer(options: StandaloneServerOptions) {
     app.use('/api/puter', puterRouter);
   }
 
-  app.get('/health', (_req, res) => {
-    res.json({
-      status: 'ok',
-      mode: options.mode,
-      puterUrl: options.mode === 'hosted'
-        ? 'https://api.puter.com'
-        : options.puterUrl,
-    });
-  });
-
   return app;
 }
 
@@ -50,8 +40,8 @@ if (require.main === module) {
   app.listen(port, () => {
     console.log(`[LibrePuter] Proxy running on port ${port}`);
     if (mode === 'hosted') {
-      console.log(`[LibrePuter] Mode: hosted (keyless) — proxying to api.puter.com`);
-      console.log(`[LibrePuter] Users sign in with their own Puter account — no API keys needed`);
+      console.log(`[LibrePuter] Mode: hosted — proxying to api.puter.com`);
+      console.log(`[LibrePuter] Users provide their own Puter auth token as API key`);
     } else {
       console.log(`[LibrePuter] Mode: self-hosted — proxying to Puter at: ${puterUrl}`);
     }

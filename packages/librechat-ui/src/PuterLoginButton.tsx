@@ -1,83 +1,24 @@
-import React, { useState } from 'react';
-import { PuterLoginDialog } from './PuterLoginDialog';
-import { usePuterAuth } from './usePuterAuth';
+import React from 'react';
 
 interface PuterLoginButtonProps {
   userId: string;
 }
 
-export function PuterLoginButton({ userId }: PuterLoginButtonProps) {
-  const { authenticated, username, loading, error, signIn, signOut, clearError } =
-    usePuterAuth(userId);
-  const [dialogOpen, setDialogOpen] = useState(false);
-
-  if (loading) {
-    return (
-      <button
-        disabled
-        style={{
-          padding: '6px 14px',
-          borderRadius: 8,
-          border: '1px solid var(--border, #333)',
-          background: 'transparent',
-          color: 'var(--text-secondary, #888)',
-          fontSize: 13,
-          cursor: 'not-allowed',
-        }}
-      >
-        Checking...
-      </button>
-    );
-  }
-
-  if (authenticated) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            fontSize: 13,
-            color: 'var(--text-primary, #e0e0e0)',
-          }}
-        >
-          <span
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: '50%',
-              background: '#4ade80',
-              display: 'inline-block',
-            }}
-          />
-          Puter: {username}
-        </span>
-        <button
-          onClick={signOut}
-          style={{
-            padding: '4px 10px',
-            borderRadius: 6,
-            border: '1px solid var(--border, #333)',
-            background: 'transparent',
-            color: '#ff6b6b',
-            fontSize: 12,
-            cursor: 'pointer',
-          }}
-        >
-          Disconnect
-        </button>
-      </div>
-    );
-  }
-
+export function PuterLoginButton({ userId: _userId }: PuterLoginButtonProps) {
   return (
-    <>
-      <button
-        onClick={() => {
-          clearError();
-          setDialogOpen(true);
-        }}
+    <div
+      style={{
+        display: 'inline-flex',
+        flexDirection: 'column',
+        gap: 4,
+        fontSize: 13,
+        color: 'var(--text-secondary, #888)',
+      }}
+    >
+      <a
+        href="https://puter.com/dashboard"
+        target="_blank"
+        rel="noopener noreferrer"
         style={{
           padding: '6px 14px',
           borderRadius: 8,
@@ -89,21 +30,13 @@ export function PuterLoginButton({ userId }: PuterLoginButtonProps) {
           display: 'inline-flex',
           alignItems: 'center',
           gap: 6,
+          textDecoration: 'none',
         }}
       >
         <span style={{ fontSize: 16 }}>&#x1f511;</span>
-        Sign in to Puter
-      </button>
-      <PuterLoginDialog
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-        onSignIn={async () => {
-          await signIn();
-          if (!error) setDialogOpen(false);
-        }}
-        error={error}
-        loading={loading}
-      />
-    </>
+        Get Puter Token
+      </a>
+      <span>Copy it from puter.com/dashboard and paste as API key in LibreChat</span>
+    </div>
   );
 }

@@ -18,8 +18,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "express": "^4.18.0",
-    "@libreputer/puter-auth": "*"
+    "express": "^4.18.0"
   },
   "devDependencies": {
     "tsup": "^8.0.0",
