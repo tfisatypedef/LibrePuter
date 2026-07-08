@@ -22,16 +22,6 @@
     }
   },
   "providers": {
-    "openai-completion": { "apiKey": "sk-your-openai-key" },
-    "claude": { "apiKey": "sk-ant-your-claude-key" },
-    "gemini": { "apiKey": "your-gemini-key" },
-    "groq": { "apiKey": "gsk-your-groq-key" },
-    "deepseek": { "apiKey": "sk-your-deepseek-key" },
-    "mistral": { "apiKey": "your-mistral-key" },
-    "xai": { "apiKey": "your-xai-key" },
-    "openrouter": { "apiKey": "sk-or-your-openrouter-key" },
-    "together-ai": { "apiKey": "your-together-key" },
-    "moonshot": { "apiKey": "your-moonshot-key" },
     "ollama": {
       "enabled": true,
       "apiBaseUrl": "http://localhost:11434"

@@ -7,7 +7,7 @@ interface PuterLoginButtonProps {
 }
 
 export function PuterLoginButton({ userId }: PuterLoginButtonProps) {
-  const { authenticated, username, loading, error, login, logout, clearError } =
+  const { authenticated, username, loading, error, signIn, signOut, clearError } =
     usePuterAuth(userId);
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -54,7 +54,7 @@ export function PuterLoginButton({ userId }: PuterLoginButtonProps) {
           Puter: {username}
         </span>
         <button
-          onClick={logout}
+          onClick={signOut}
           style={{
             padding: '4px 10px',
             borderRadius: 6,
@@ -91,14 +91,14 @@ export function PuterLoginButton({ userId }: PuterLoginButtonProps) {
           gap: 6,
         }}
       >
-        <span style={{ fontSize: 16 }}>🔑</span>
+        <span style={{ fontSize: 16 }}>&#x1f511;</span>
         Sign in to Puter
       </button>
       <PuterLoginDialog
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
-        onLogin={async (u, p) => {
-          await login(u, p);
+        onSignIn={async () => {
+          await signIn();
           if (!error) setDialogOpen(false);
         }}
         error={error}

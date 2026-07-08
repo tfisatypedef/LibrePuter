@@ -1,17 +1,18 @@
-# Add this to your LibreChat librechat.yaml to enable Puter AI models.
-# The LibrePuter proxy handles authentication with Puter.
-
+# LibrePuter provides keyless access to 500+ AI models via Puter's User-Pays model.
+# Users sign in with their own Puter account and cover their own AI usage costs.
+# You do not need any API keys.
+#
+# For the hosted (keyless) mode, point baseURL at the LibrePuter proxy directly:
 endpoints:
   custom:
     - name: "Puter"
-      # Points at the LibrePuter proxy, not directly at Puter.
-      # The proxy injects the Puter auth cookie transparently.
-      baseURL: "/api/puter/proxy/v1"
-      # No API key needed - LibrePuter handles Puter auth per-user.
+      baseURL: "http://localhost:3090/api/puter/proxy/v1"
       apiKey: ""
       models:
         default: []
-        # Fetch model list from Puter's public API
         fetch: true
       modelDisplayLabel: "Puter AI"
       titleConvo: true
+
+# If LibrePuter is mounted inside LibreChat (patched), use a relative path instead:
+#   baseURL: "/api/puter/proxy/v1"

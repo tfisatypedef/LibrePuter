@@ -1,6 +1,8 @@
 # LibrePuter
 
-Bridge **Puter AI** models into any **OpenAI-compatible chat client** (like LibreChat) with per-user authentication.
+Bridge **500+ AI models** (OpenAI, Claude, Gemini, Grok, DeepSeek, and more) into any **OpenAI-compatible chat client** (like LibreChat) — **without any API keys**.
+
+Powered by [Puter.js](https://developer.puter.com) and the **User-Pays model**: users sign in with their own Puter account and cover their own AI usage. You pay nothing for infrastructure.
 
 ## How it works
 
@@ -8,39 +10,21 @@ Bridge **Puter AI** models into any **OpenAI-compatible chat client** (like Libr
 flowchart LR
     User -->|Chat UI| LibreChat
     LibreChat -->|"/api/puter/proxy/v1/*"| LibrePuter
-    LibrePuter -->|"auth cookie"| Puter
-    Puter -->|"Claude, GPT, Gemini..."| Upstream
+    LibrePuter -->|"Authorization: Bearer <token>"| PuterAPI
+    PuterAPI -->|"OpenAI, Claude, Gemini..."| Response
     
-    User -->|"Login form"| LibreChat
-    LibreChat -->|"/api/puter/login"| LibrePuter
-    LibrePuter -->|"/auth/login"| Puter
+    User -->|"Sign in with Puter (popup)"| PuterJS
+    PuterJS -->|"auth token"| LibrePuter
 ```
 
-1. **Puter** runs as your AI aggregator — it holds all your upstream API keys (OpenAI, Claude, DeepSeek, etc.)
-2. **LibrePuter** runs as a proxy that manages per-user Puter login sessions
-3. **LibreChat** (or any client) points its custom endpoint at LibrePuter
-4. Each LibreChat user signs into Puter once via the UI — their session token is stored server-side
-5. AI requests flow: LibreChat → LibrePuter (injects auth) → Puter (routes to correct provider) → response
+1. **Puter.js** runs in the browser — user clicks "Sign in with Puter" to authenticate
+2. **LibrePuter** stores the user's Puter auth token server-side
+3. **LibreChat** sends AI requests to LibrePuter, which forwards them to Puter's API with the user's token
+4. **Puter** routes to the correct AI model — the user's Puter account covers the cost
 
 ## Quick Start
 
-### 1. Configure Puter
-
-Make sure Puter is running with your provider keys in its `config.json`:
-
-```json
-{
-  "providers": {
-    "openai-completion": { "apiKey": "sk-..." },
-    "claude": { "apiKey": "sk-ant-..." },
-    "gemini": { "apiKey": "..." },
-    "deepseek": { "apiKey": "..." },
-    "ollama": { "enabled": true, "apiBaseUrl": "http://localhost:11434" }
-  }
-}
-```
-
-### 2. Install LibrePuter
+### 1. Install LibrePuter
 
 ```bash
 cd path/to/LibrePuter
@@ -48,7 +32,7 @@ npm install
 npm run build
 ```
 
-### 3. Configure LibreChat
+### 2. Configure LibreChat
 
 Add this to your `librechat.yaml`:
 
@@ -56,7 +40,7 @@ Add this to your `librechat.yaml`:
 endpoints:
   custom:
     - name: "Puter"
-      baseURL: "/api/puter/proxy/v1"
+      baseURL: "http://localhost:3090/api/puter/proxy/v1"
       apiKey: ""
       models:
         default: []
@@ -65,43 +49,57 @@ endpoints:
       titleConvo: true
 ```
 
-### 4. Start everything
+### 3. Start the proxy
 
 ```bash
-# Terminal 1: Start Puter
-cd /path/to/puter
-npm start
-
-# Terminal 2: Start LibreChat
-cd /path/to/LibreChat
-npm run backend
+npm run dev -w packages/librechat-backend
 ```
 
-### 5. Sign in
+### 4. Sign in
 
-In LibreChat, select "Puter" as your endpoint, click "Sign in to Puter", and enter your Puter credentials. All Puter's configured AI models become available.
+In LibreChat, select "Puter" as your endpoint, click **"Sign in to Puter"**, and authenticate with your Puter account. All 500+ AI models become available — no API keys required.
+
+## Modes
+
+| Mode | Description | API Keys Needed |
+|------|-------------|-------------|
+| **Hosted** (default) | Proxies to `https://api.puter.com`. Users sign in with Puter account and pay their own usage. | No |
+| **Self-hosted** | Proxies to your own Puter server. Useful with local Ollama models. | No (for Ollama) |
+
+Set mode via `LIBREPUTER_MODE` env var or the setup wizard.
+
+## Puter.js setup
+
+LibrePuter expects Puter.js to be available on the page. Include it in your LibreChat frontend:
+
+```html
+<script src="https://js.puter.com/v2/"></script>
+```
+
+Or install the npm package:
+
+```bash
+npm install @heyputer/puter.js
+```
 
 ## Architecture
 
 ```
 C:\Users\weaka\LibrePuter\
 ├── packages/
-│   ├── puter-auth/           # Puter login client (auth API wrapper)
 │   ├── librechat-backend/    # Express proxy + token management
 │   └── librechat-ui/         # React login components
 ├── config/
 │   ├── librechat.yaml.example
 │   └── puter.config.json.example
 └── scripts/
-    ├── setup.js              # Interactive setup wizard
-    └── patch-librechat.js   # Patches LibreChat server
+    └── setup.js              # Interactive setup wizard
 ```
 
 ## Packages
 
 | Package | Description |
 |---------|-------------|
-| `@libreputer/puter-auth` | Client for Puter's `/auth/login`, session management |
 | `@libreputer/librechat-backend` | Express router with `/api/puter/*` endpoints, token store, AI request proxying |
 | `@libreputer/librechat-ui` | React components: `PuterLoginButton`, `PuterLoginDialog`, `usePuterAuth` hook |
 
@@ -109,7 +107,7 @@ C:\Users\weaka\LibrePuter\
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/api/puter/login` | POST | Authenticate user with Puter |
+| `/api/puter/login` | POST | Store user's Puter auth token |
 | `/api/puter/logout` | POST | Clear user's Puter session |
 | `/api/puter/status` | GET | Check auth status |
 | `/api/puter/models` | GET | List available models (public) |

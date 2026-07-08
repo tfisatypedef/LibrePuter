@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 interface PuterLoginDialogProps {
   open: boolean;
   onClose: () => void;
-  onLogin: (username: string, password: string) => Promise<void>;
+  onSignIn: () => Promise<void>;
   error: string | null;
   loading: boolean;
 }
@@ -11,19 +11,11 @@ interface PuterLoginDialogProps {
 export function PuterLoginDialog({
   open,
   onClose,
-  onLogin,
+  onSignIn,
   error,
   loading,
 }: PuterLoginDialogProps) {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-
   if (!open) return null;
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await onLogin(username, password);
-  };
 
   return (
     <div
@@ -50,120 +42,62 @@ export function PuterLoginDialog({
           Sign in to Puter
         </h2>
         <p style={{ margin: '0 0 24px', fontSize: 14, opacity: 0.7 }}>
-          Connect to Puter to access AI models
+          Connect your Puter account to access 500+ AI models.
+          Your Puter account covers the usage costs — you pay nothing.
         </p>
 
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: 16 }}>
-            <label
-              style={{
-                display: 'block',
-                fontSize: 13,
-                marginBottom: 6,
-                opacity: 0.8,
-              }}
-            >
-              Username
-            </label>
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '10px 12px',
-                borderRadius: 8,
-                border: '1px solid var(--border, #333)',
-                background: 'var(--input-bg, #16213e)',
-                color: 'inherit',
-                fontSize: 14,
-                boxSizing: 'border-box',
-              }}
-              placeholder="Puter username"
-              disabled={loading}
-              autoFocus
-            />
+        {error && (
+          <div
+            style={{
+              padding: '8px 12px',
+              background: 'rgba(255, 50, 50, 0.15)',
+              color: '#ff6b6b',
+              borderRadius: 8,
+              fontSize: 13,
+              marginBottom: 16,
+            }}
+          >
+            {error}
           </div>
+        )}
 
-          <div style={{ marginBottom: 16 }}>
-            <label
-              style={{
-                display: 'block',
-                fontSize: 13,
-                marginBottom: 6,
-                opacity: 0.8,
-              }}
-            >
-              Password
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '10px 12px',
-                borderRadius: 8,
-                border: '1px solid var(--border, #333)',
-                background: 'var(--input-bg, #16213e)',
-                color: 'inherit',
-                fontSize: 14,
-                boxSizing: 'border-box',
-              }}
-              placeholder="Puter password"
-              disabled={loading}
-            />
-          </div>
-
-          {error && (
-            <div
-              style={{
-                padding: '8px 12px',
-                background: 'rgba(255, 50, 50, 0.15)',
-                color: '#ff6b6b',
-                borderRadius: 8,
-                fontSize: 13,
-                marginBottom: 16,
-              }}
-            >
-              {error}
-            </div>
-          )}
-
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
-            <button
-              type="button"
-              onClick={onClose}
-              style={{
-                padding: '8px 20px',
-                borderRadius: 8,
-                border: '1px solid var(--border, #333)',
-                background: 'transparent',
-                color: 'inherit',
-                cursor: 'pointer',
-                fontSize: 14,
-              }}
-              disabled={loading}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              style={{
-                padding: '8px 20px',
-                borderRadius: 8,
-                border: 'none',
-                background: loading ? '#555' : '#4a6cf7',
-                color: '#fff',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                fontSize: 14,
-              }}
-              disabled={loading}
-            >
-              {loading ? 'Connecting...' : 'Connect'}
-            </button>
-          </div>
-        </form>
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              padding: '8px 20px',
+              borderRadius: 8,
+              border: '1px solid var(--border, #333)',
+              background: 'transparent',
+              color: 'inherit',
+              cursor: 'pointer',
+              fontSize: 14,
+            }}
+            disabled={loading}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={onSignIn}
+            style={{
+              padding: '8px 20px',
+              borderRadius: 8,
+              border: 'none',
+              background: loading ? '#555' : '#4a6cf7',
+              color: '#fff',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              fontSize: 14,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+            }}
+            disabled={loading}
+          >
+            {loading ? 'Connecting...' : 'Sign in with Puter'}
+          </button>
+        </div>
       </div>
     </div>
   );

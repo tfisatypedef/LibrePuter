@@ -5,11 +5,12 @@ export interface PuterAuthState {
   username: string | null;
   loading: boolean;
   error: string | null;
+  token: string | null;
 }
 
 interface UsePuterAuthReturn extends PuterAuthState {
-  login: (username: string, password: string) => Promise<void>;
-  logout: () => Promise<void>;
+  signIn: () => Promise<void>;
+  signOut: () => Promise<void>;
   clearError: () => void;
 }
 
@@ -19,6 +20,7 @@ export function usePuterAuth(userId: string): UsePuterAuthReturn {
     username: null,
     loading: true,
     error: null,
+    token: null,
   });
 
   const checkStatus = useCallback(async () => {
@@ -29,6 +31,7 @@ export function usePuterAuth(userId: string): UsePuterAuthReturn {
         ...prev,
         authenticated: data.authenticated ?? false,
         username: data.username ?? null,
+        token: data.token ?? null,
         loading: false,
       }));
     } catch {
@@ -40,42 +43,53 @@ export function usePuterAuth(userId: string): UsePuterAuthReturn {
     checkStatus();
   }, [checkStatus]);
 
-  const login = useCallback(
-    async (username: string, password: string) => {
-      setState((prev) => ({ ...prev, loading: true, error: null }));
-      try {
-        const res = await fetch('/api/puter/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password, userId }),
-        });
+  const signIn = useCallback(async () => {
+    setState((prev) => ({ ...prev, loading: true, error: null }));
+    try {
+      let token: string | null = null;
+      let username: string | null = null;
 
-        if (!res.ok) {
-          const data = await res.json();
-          throw new Error(data.error || 'Login failed');
-        }
-
-        const data = await res.json();
-        setState((prev) => ({
-          ...prev,
-          authenticated: true,
-          username: data.username,
-          loading: false,
-        }));
-      } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Login failed';
-        setState((prev) => ({
-          ...prev,
-          loading: false,
-          error: message,
-        }));
-        throw err;
+      if (typeof puter !== 'undefined' && puter.auth) {
+        await puter.auth.signIn();
+        const user = await puter.auth.getUser();
+        username = user?.username ?? null;
+        token = user?.authToken ?? null;
       }
-    },
-    [userId],
-  );
 
-  const logout = useCallback(async () => {
+      if (!token) {
+        throw new Error('Could not obtain Puter auth token. Make sure Puter.js is loaded.');
+      }
+
+      const res = await fetch('/api/puter/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ authToken: token, username, userId }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to register Puter session');
+      }
+
+      setState((prev) => ({
+        ...prev,
+        authenticated: true,
+        username,
+        token,
+        loading: false,
+      }));
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Sign in failed';
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        error: message,
+      }));
+      throw err;
+    }
+  }, [userId]);
+
+  const signOut = useCallback(async () => {
     try {
       await fetch('/api/puter/logout', {
         method: 'POST',
@@ -88,6 +102,7 @@ export function usePuterAuth(userId: string): UsePuterAuthReturn {
       username: null,
       loading: false,
       error: null,
+      token: null,
     });
   }, [userId]);
 
@@ -95,5 +110,5 @@ export function usePuterAuth(userId: string): UsePuterAuthReturn {
     setState((prev) => ({ ...prev, error: null }));
   }, []);
 
-  return { ...state, login, logout, clearError };
+  return { ...state, signIn, signOut, clearError };
 }

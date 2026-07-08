@@ -1,19 +1,17 @@
 import { Router } from 'express';
-import { PuterAuthClient } from '@libreputer/puter-auth';
-import type { LibrePuterConfig } from './types';
 import { TokenStore } from './tokenStore';
+import type { LibrePuterConfig, TokenRecord } from './types';
 
 export function createPuterProxyRouter(config: LibrePuterConfig): Router {
   const router = Router();
   const tokenStore = new TokenStore();
 
-  // POST /api/puter/login — authenticate a user with Puter
   router.post('/login', async (req, res) => {
     try {
-      const { username, password, userId } = req.body;
+      const { authToken, username, userId } = req.body;
 
-      if (!username || !password) {
-        res.status(400).json({ error: 'Username and password are required' });
+      if (!authToken) {
+        res.status(400).json({ error: 'authToken is required' });
         return;
       }
 
@@ -22,32 +20,24 @@ export function createPuterProxyRouter(config: LibrePuterConfig): Router {
         return;
       }
 
-      const authClient = new PuterAuthClient({ serverUrl: config.puterUrl });
-      const loginResult = await authClient.login({ username, password });
-
       tokenStore.set(userId, {
         userId,
-        token: loginResult.sessionToken,
-        username: loginResult.user.username,
+        token: authToken,
+        username: username ?? 'puter-user',
         createdAt: Date.now(),
         expiresAt: Date.now() + 24 * 60 * 60 * 1000,
       });
 
       res.json({
         authenticated: true,
-        username: loginResult.user.username,
+        username: username ?? 'puter-user',
       });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Login failed';
-      const status =
-        err instanceof Error && 'statusCode' in err
-          ? (err as any).statusCode
-          : 500;
-      res.status(status).json({ error: message });
+      res.status(500).json({ error: message });
     }
   });
 
-  // GET /api/puter/status — check auth status for a user
   router.get('/status', (req, res) => {
     const userId = req.query.userId as string;
 
@@ -65,10 +55,10 @@ export function createPuterProxyRouter(config: LibrePuterConfig): Router {
     res.json({
       authenticated: true,
       username: record.username,
+      token: record.token,
     });
   });
 
-  // POST /api/puter/logout — clear session for a user
   router.post('/logout', (req, res) => {
     const { userId } = req.body;
 
@@ -81,11 +71,10 @@ export function createPuterProxyRouter(config: LibrePuterConfig): Router {
     res.json({ success: true });
   });
 
-  // GET /api/puter/models — fetch available models from Puter
   router.get('/models', async (_req, res) => {
     try {
       const response = await fetch(
-        `${config.puterUrl}/puterai/chat/models`,
+        `https://api.puter.com/puterai/chat/models`,
       );
       if (!response.ok) {
         res.status(response.status).json({
@@ -101,11 +90,10 @@ export function createPuterProxyRouter(config: LibrePuterConfig): Router {
     }
   });
 
-  // GET /api/puter/models/details — fetch detailed model info
   router.get('/models/details', async (_req, res) => {
     try {
       const response = await fetch(
-        `${config.puterUrl}/puterai/chat/models/details`,
+        'https://api.puter.com/puterai/chat/models/details',
       );
       if (!response.ok) {
         res.status(response.status).json({
@@ -121,7 +109,6 @@ export function createPuterProxyRouter(config: LibrePuterConfig): Router {
     }
   });
 
-  // ALL /api/puter/proxy/v1/* — proxy AI requests with auth
   router.all('/proxy/v1/*', async (req, res) => {
     const userId = req.headers['x-librechat-userid'] as string;
 
@@ -140,14 +127,14 @@ export function createPuterProxyRouter(config: LibrePuterConfig): Router {
     }
 
     const upstreamPath = req.path.replace('/proxy/v1', '');
-    const upstreamUrl = `${config.puterUrl}/puterai/openai/v1${upstreamPath}`;
+    const upstreamUrl = `https://api.puter.com/puterai/openai/v1${upstreamPath}`;
 
     try {
       const upstreamRes = await fetch(upstreamUrl, {
         method: req.method,
         headers: {
           'Content-Type': 'application/json',
-          Cookie: `puter_auth_token=${record.token}`,
+          'Authorization': `Bearer ${record.token}`,
         },
         body:
           req.method !== 'GET' && req.method !== 'HEAD'
