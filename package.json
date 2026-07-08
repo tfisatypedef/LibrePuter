@@ -1,0 +1,25 @@
+{
+  "name": "libreputer",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Bridge Puter AI models into LibreChat with per-user Puter authentication",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "build:puter-auth": "npm run build -w packages/puter-auth",
+    "build:backend": "npm run build -w packages/librechat-backend",
+    "build:ui": "npm run build -w packages/librechat-ui",
+    "dev": "npm run dev --workspaces",
+    "test": "npm run test --workspaces",
+    "patch:librechat": "node scripts/patch-librechat.js",
+    "prepublish": "npm run build"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "tsup": "^8.0.0",
+    "@types/node": "^20.0.0",
+    "vitest": "^1.0.0"
+  }
+}
