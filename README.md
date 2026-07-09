@@ -1,89 +1,78 @@
 # LibrePuter
 
-Bridge **500+ AI models** (OpenAI, Claude, Gemini, Grok, DeepSeek, and more) into **LibreChat** — powered by [Puter's User-Pays model](https://developer.puter.com).
+**LibreChat** with **Puter AI** built-in — 500+ AI models, user-pays, no API keys to manage.
 
-Users provide their own Puter auth token as the API key. They pay for their own AI usage — you pay nothing. No API keys to manage on your end.
-
-## How it works
-
-```
-LibreChat ──→ LibrePuter (proxy) ──→ api.puter.com
-                :3090                    ↑
-  User pastes Puter auth token ─────────╯
-  as API key in LibreChat
-```
-
-1. User goes to [puter.com/dashboard](https://puter.com/dashboard) and copies their **Puter Auth Token**
-2. Pastes it into LibreChat as the API key for the "Puter AI" custom endpoint
-3. LibreChat sends `Authorization: Bearer <token>` to LibrePuter
-4. LibrePuter forwards to `api.puter.com` — Puter charges the user, not you
+A fork of [LibreChat](https://github.com/danny-avila/LibreChat) that adds Puter AI as a pre-configured custom endpoint. Users paste their Puter auth token (from [puter.com/dashboard](https://puter.com/dashboard)) as the API key and get access to all Puter-hosted models (OpenAI, Claude, Gemini, Grok, DeepSeek, Qwen, and more).
 
 ## Quick Start
 
-### 1. Install
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) 20+
+- [MongoDB](https://www.mongodb.com/) running locally or remotely
+
+### Setup
 
 ```bash
 cd path/to/LibrePuter
+
+# Copy and edit environment variables
+cp .env.example .env
+# At minimum, set MONGO_URI to your MongoDB connection string
+
+# Install dependencies
 npm install
-npm run build
-```
 
-### 2. Start the proxy
+# Build the frontend
+npm run frontend
 
-```bash
+# Start
 npm start
 ```
 
-### 3. Add to LibreChat config
+Open [http://localhost:3080](http://localhost:3080) in your browser. Create an account, select **Puter AI** from the endpoint dropdown, paste your Puter auth token, and start chatting.
 
-In your LibreChat's `librechat.yaml`:
+### Getting your Puter token
+
+1. Go to [puter.com/dashboard](https://puter.com/dashboard)
+2. Sign in (or create a free account)
+3. Copy your Puter Auth Token
+4. In LibreChat, select "Puter AI" as the endpoint
+5. Paste the token as the API key
+
+## Configuration
+
+LibrePuter supports all [LibreChat configuration options](https://www.librechat.ai/docs/configuration/librechat_yaml). The Puter AI custom endpoint is pre-configured in `librechat.yaml`:
 
 ```yaml
 endpoints:
   custom:
-    - name: "Puter AI"
-      baseURL: "http://localhost:3090/api/puter/proxy/v1"
-      apiKey: "user_provided"
+    - name: 'Puter AI'
+      apiKey: 'user_provided'
+      baseURL: 'http://localhost:3080/api/puter/proxy/v1'
       models:
         default: []
         fetch: true
-      modelDisplayLabel: "Puter AI"
       titleConvo: true
+      modelDisplayLabel: 'Puter AI'
 ```
-
-### 4. Sign in
-
-In LibreChat, select "Puter AI" as your endpoint. Paste your Puter Auth Token (from [puter.com/dashboard](https://puter.com/dashboard)) as the API key. All 500+ models become available.
-
-## Modes
-
-| Mode | Description | Users provide token? |
-|------|-------------|-------------------|
-| **Hosted** (default) | Proxies to `api.puter.com` | Yes — their own Puter token |
-| **Self-hosted** | Proxies to your own Puter server (e.g., with Ollama) | Yes — their own Puter token |
-
-Set mode via `LIBREPUTER_MODE` env var.
 
 ## Architecture
 
 ```
-packages/
-├── librechat-backend/    # Express proxy to api.puter.com
-└── librechat-ui/         # React button linking to puter.com/dashboard
-config/
-├── librechat.yaml.example
-└── puter.config.json.example
-scripts/
-└── setup.js
+Browser → LibrePuter (port 3080)
+             ├── LibreChat SPA (React UI)
+             ├── LibreChat API (auth, users, convos, etc.)
+             └── /api/puter/* (proxies to api.puter.com)
 ```
 
-## API Endpoints
+## Puter API Endpoints
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/puter/proxy/v1/*` | ALL | Proxy AI requests to Puter (passes Authorization header through) |
-| `/api/puter/models` | GET | List available models (public) |
-| `/api/puter/models/details` | GET | List models with metadata (public) |
+| Endpoint | Description |
+|----------|-------------|
+| `GET /api/puter/models` | List available models |
+| `GET /api/puter/models/details` | List models with metadata |
+| `ALL /api/puter/proxy/v1/*` | Proxy AI requests to Puter (passthrough auth) |
 
 ## License
 
