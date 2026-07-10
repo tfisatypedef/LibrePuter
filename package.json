@@ -1,7 +1,7 @@
 {
-  "name": "LibreChat",
+  "name": "LibrePuter",
   "version": "v0.8.7",
-  "description": "",
+  "description": "LibreChat fork with built-in Puter AI endpoint — 500+ models, user-pays, no API keys needed",
   "packageManager": "npm@11.13.0",
   "workspaces": [
     "api",
@@ -113,14 +113,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/danny-avila/LibreChat.git"
+    "url": "git+https://github.com/tfisatypedef/LibrePuter.git"
   },
   "author": "",
-  "license": "ISC",
+  "license": "AGPL-3.0",
   "bugs": {
-    "url": "https://github.com/danny-avila/LibreChat/issues"
+    "url": "https://github.com/tfisatypedef/LibrePuter/issues"
   },
-  "homepage": "https://librechat.ai/",
+  "homepage": "https://github.com/tfisatypedef/LibrePuter",
   "devDependencies": {
     "@axe-core/playwright": "^4.10.1",
     "@eslint/compat": "^1.2.6",

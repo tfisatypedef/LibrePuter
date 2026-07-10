@@ -9,6 +9,7 @@ const passport = require('passport');
 const compression = require('compression');
 const cookieParser = require('cookie-parser');
 const mongoSanitize = require('express-mongo-sanitize');
+const { createPuterProxyRouter } = require('./puterProxy');
 const { logger, runAsSystem, tenantStorage } = require('@librechat/data-schemas');
 const {
   isEnabled,
@@ -299,6 +300,9 @@ const startServer = async () => {
   app.use('/api/tags', routes.tags);
   app.use('/api/mcp', routes.mcp);
   app.use('/api/rum', routes.rum);
+
+  /** Puter AI proxy — users paste their Puter auth token as the API key */
+  app.use('/api/puter', createPuterProxyRouter());
 
   app.use('/metrics', metricsRouter);
 
